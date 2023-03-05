@@ -1,0 +1,16 @@
+{
+  "name": "you-get-devtool",
+  "version": "0.0.1",
+  "description": "this is a Tampermonkey script used to download video, music and other network resources",
+  "main": "index.js",
+  "scripts": {
+    "build": "node build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "neil",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "esbuild": "^0.17.11"
+  }
+}
