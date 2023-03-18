@@ -11,6 +11,7 @@
 // @match               https://www.acfun.cn/v/*
 // @match               https://www.youtube.com/watch/*
 // @match               https://v.qq.com/*
+// @match               https://v.cctv.com/*
 // @grant               none
 // ==/UserScript==
 (() => {
@@ -56,14 +57,19 @@
     }
     return new Blob(chunks);
   };
-  var getUrlsByM3u8 = async (url) => {
+  var getUrlsByM3u8 = async (url, parser) => {
     const urlObj = new URL(url);
     urlObj.pathname = urlObj.pathname.split("/").slice(0, -1).join("/");
     urlObj.search = "";
     const base = urlObj.toString();
     const res = await fetch(url);
     const data = await res.text();
-    return data.split("\n").filter((i) => !!i && !i.startsWith("#")).map((i) => i.startsWith("/") ? `${base}${i}` : `${base}/${i}`);
+    return data.split("\n").filter((i) => !!i && !i.startsWith("#")).map((i) => {
+      if (parser) {
+        return parser(i);
+      }
+      return i.startsWith("/") ? `${base}${i}` : `${base}/${i}`;
+    });
   };
   var getFiles = (urls, max = 8) => {
     let connections = 0;
@@ -83,7 +89,7 @@
             if (urls?.length) {
               getSingleFile(urls.shift());
             } else {
-              resolve(files);
+              connections === 0 && resolve(files);
             }
           } catch (error) {
             console.log(error);
@@ -285,6 +291,23 @@
     download(new Blob(files), "download.mp4");
   };
 
+  // src/module/cctv.js
+  var getVideoInfo4 = async () => {
+    let data = await fetch(
+      `https://vdn.apps.cntv.cn/api/getHttpVideoInfo.do?pid=${window.guid}`
+    );
+    data = await data.json();
+    const urls = data?.video?.[`chapters${data?.video?.validChapterNum}`];
+    return { urls, fileName: `${data?.title}.mp4` };
+  };
+  var cctv_default = async () => {
+    const { urls, fileName } = await getVideoInfo4();
+    while (urls.length) {
+      const file = await getFile(urls.shift().url);
+      download(file, fileName);
+    }
+  };
+
   // src/module/index.js
   var module_default = {
     ixigua: xigua_default,
@@ -294,7 +317,8 @@
     youtube: youtube_default,
     acfun: acfun_default,
     qq: qq_default,
-    xvideos: xvideos_default
+    xvideos: xvideos_default,
+    cctv: cctv_default
   };
 
   // src/index.js

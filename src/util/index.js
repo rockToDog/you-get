@@ -55,7 +55,7 @@ export const getFile = async (url) => {
   // return chunksAll;
 };
 
-export const getUrlsByM3u8 = async (url) => {
+export const getUrlsByM3u8 = async (url, parser) => {
   const urlObj = new URL(url);
   urlObj.pathname = urlObj.pathname.split("/").slice(0, -1).join("/");
   urlObj.search = "";
@@ -65,7 +65,12 @@ export const getUrlsByM3u8 = async (url) => {
   return data
     .split("\n")
     .filter((i) => !!i && !i.startsWith("#"))
-    .map((i) => (i.startsWith("/") ? `${base}${i}` : `${base}/${i}`));
+    .map((i) => {
+      if (parser) {
+        return parser(i);
+      }
+      return i.startsWith("/") ? `${base}${i}` : `${base}/${i}`;
+    });
 };
 
 export const getFiles = (urls, max = 8) => {
@@ -87,7 +92,7 @@ export const getFiles = (urls, max = 8) => {
           if (urls?.length) {
             getSingleFile(urls.shift());
           } else {
-            resolve(files);
+            connections === 0 && resolve(files);
           }
         } catch (error) {
           console.log(error);

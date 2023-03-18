@@ -5,7 +5,7 @@ import douyin from "@/module/douyin";
 import kuaishou from "@/module/kuaishou";
 import youtube from "@/module/youtube";
 import qq from "@/module/qq";
-import xvideos from "@/module/xvideos";
+import cctv from "@/module/cctv";
 
 export default {
   ixigua,
@@ -15,5 +15,5 @@ export default {
   youtube,
   acfun,
   qq,
-  xvideos,
+  cctv
 };
