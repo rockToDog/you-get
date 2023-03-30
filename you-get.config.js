@@ -12,7 +12,8 @@ export default {
     "https://www.acfun.cn/v/*",
     "https://www.youtube.com/watch/*",
     "https://v.qq.com/*",
-    "https://v.cctv.com/*"
+    "https://v.cctv.com/*",
+    "https://v.youku.com/*"
   ],
   grant: "none",
 };

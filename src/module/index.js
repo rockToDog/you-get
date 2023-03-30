@@ -6,6 +6,7 @@ import kuaishou from "@/module/kuaishou";
 import youtube from "@/module/youtube";
 import qq from "@/module/qq";
 import cctv from "@/module/cctv";
+import youku from "@/module/youku";
 
 export default {
   ixigua,
@@ -15,5 +16,6 @@ export default {
   youtube,
   acfun,
   qq,
-  cctv
+  cctv,
+  youku
 };

@@ -12,6 +12,7 @@
 // @match               https://www.youtube.com/watch/*
 // @match               https://v.qq.com/*
 // @match               https://v.cctv.com/*
+// @match               https://v.youku.com/*
 // @grant               none
 // ==/UserScript==
 (() => {
@@ -272,27 +273,8 @@
     download(new Blob(files), "download.mp4");
   };
 
-  // src/module/xvideos.js
-  var getVideoInfo3 = async () => {
-    const res = await getUrlsByM3u8(window.html5player.url_hls);
-    const quality = res.sort(
-      (a, b) => b.match(/hls-([\d]+)/)[1] - a.match(/hls-([\d]+)/)[1]
-    )[0];
-    const m3u8FileUrl = window.html5player.url_hls.replace("hls.m3u8", quality);
-    const urls = await getUrlsByM3u8(m3u8FileUrl);
-    return urls.map((url) => ({
-      url,
-      fileName: `download.ts`
-    }));
-  };
-  var xvideos_default = async () => {
-    const urls = await getVideoInfo3();
-    const files = await getFiles(urls);
-    download(new Blob(files), "download.mp4");
-  };
-
   // src/module/cctv.js
-  var getVideoInfo4 = async () => {
+  var getVideoInfo3 = async () => {
     let data = await fetch(
       `https://vdn.apps.cntv.cn/api/getHttpVideoInfo.do?pid=${window.guid}`
     );
@@ -301,10 +283,28 @@
     return { urls, fileName: `${data?.title}.mp4` };
   };
   var cctv_default = async () => {
-    const { urls, fileName } = await getVideoInfo4();
+    const { urls, fileName } = await getVideoInfo3();
     while (urls.length) {
       const file = await getFile(urls.shift().url);
       download(file, fileName);
+    }
+  };
+
+  // src/module/youku.js
+  var youku_default = async () => {
+    if (!document.querySelector("meta#you-get-youku")) {
+      const meta = document.createElement("meta");
+      meta.httpEquiv = "Content-Security-Policy";
+      meta.content = "upgrade-insecure-requests";
+      meta.id = "you-get-youku";
+      document.querySelector("head").appendChild(meta);
+    }
+    const data = window?.videoPlayer?.context?.mediaData?.mediaResource?._model;
+    if (data) {
+      const m3u8FileUrl = data.streamList.sort((a, b) => b.width - a.width)[0].uri.HLS;
+      const urls = await getUrlsByM3u8(m3u8FileUrl, (i) => i);
+      const files = await getFiles(urls.map((url) => ({ url })));
+      download(new Blob(files), `${data.video.title}.ts`);
     }
   };
 
@@ -317,11 +317,12 @@
     youtube: youtube_default,
     acfun: acfun_default,
     qq: qq_default,
-    xvideos: xvideos_default,
-    cctv: cctv_default
+    cctv: cctv_default,
+    youku: youku_default
   };
 
   // src/index.js
+  var fetch2 = window.fetch;
   var youget = () => {
     const handler = Object.entries(module_default).find(
       ([key, fn]) => window.location.host.toLocaleLowerCase().includes(key)

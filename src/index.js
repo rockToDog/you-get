@@ -1,5 +1,6 @@
 import module from "@/module";
 
+const fetch = window.fetch;
 const youget = () => {
   const handler = Object.entries(module).find(([key, fn]) =>
     window.location.host.toLocaleLowerCase().includes(key)
